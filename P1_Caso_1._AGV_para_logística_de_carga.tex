@@ -1,0 +1,184 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+\geometry{left=2.3cm,right=2.3cm,top=2.2cm,bottom=2.2cm}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Proyecto 1: AGV para logística de alta carga}}\\[0.3cm]
+    {\large Propuesta corta de solución}
+\end{center}
+
+\section{Propuesta}
+
+Para este AGV, la idea es que el vehículo transporte hasta \textbf{300 kg}, por lo que necesita \textbf{motores de alto torque} y desplazarse a \textbf{baja velocidad} para moverse con seguridad en pasillos estrechos.
+
+La propuesta es dividir el sistema en dos partes:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item \textbf{ESP32:} encargado de controlar los motores, es decir, decidir cuándo avanzar, detenerse o reducir velocidad.
+    \item \textbf{Raspberry Pi:} encargada de procesar la información de una \textbf{cámara} y de un \textbf{sensor infrarrojo}, para detectar personas u obstáculos.
+\end{itemize}
+
+La Raspberry Pi analiza en todo momento si hay una persona cerca. Si detecta riesgo, envía por \textbf{MQTT} una señal al ESP32 para que el AGV se detenga o reduzca velocidad.
+
+Además, el sensor infrarrojo puede actuar como respaldo a una distancia aproximada de \textbf{1 a 2 metros}, para evitar que el vehículo frene demasiado tarde. Esto es importante porque, si frena de golpe, la carga puede desplazarse hacia adelante por \textbf{inercia}.
+
+\section{Hardware y comunicación}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item \textbf{Motores DC con alto torque o motorreductores:} para mover la carga de 300 kg.
+    \item \textbf{Driver de motores:} para alimentar y controlar los motores.
+    \item \textbf{ESP32:} control directo de movimiento.
+    \item \textbf{Raspberry Pi:} procesamiento de visión y lógica de detección.
+    \item \textbf{Cámara:} detección visual de personas.
+    \item \textbf{Sensor infrarrojo:} detección rápida a corta distancia.
+    \item \textbf{MQTT:} protocolo para comunicar Raspberry Pi y ESP32.
+\end{itemize}
+
+\section{Diagrama general del sistema}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm and 1.4cm,
+    bloque/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        thick,
+        minimum width=3.6cm,
+        minimum height=1cm,
+        align=center,
+        fill=blue!10
+    },
+    sensor/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        thick,
+        minimum width=3.6cm,
+        minimum height=1cm,
+        align=center,
+        fill=green!10
+    },
+    control/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        thick,
+        minimum width=3.8cm,
+        minimum height=1cm,
+        align=center,
+        fill=orange!15
+    },
+    flecha/.style={
+        -{Latex[length=2.5mm]},
+        thick
+    }
+]
+
+\node[sensor] (cam) {Cámara};
+\node[sensor, below=of cam] (ir) {Sensor infrarrojo\\(1--2 m)};
+\node[bloque, right=2cm of ir] (rasp) {Raspberry Pi\\Procesa detección};
+\node[control, right=2cm of rasp] (esp) {ESP32\\Control de movimiento};
+\node[bloque, below=of esp] (driver) {Driver de motores};
+\node[bloque, below=of driver] (motor) {Motores de alto torque};
+\node[bloque, below=of motor] (agv) {AGV con carga de 300 kg};
+
+\draw[flecha] (cam) -- (rasp);
+\draw[flecha] (ir) -- (rasp);
+\draw[flecha] (rasp) -- node[above]{MQTT} (esp);
+\draw[flecha] (esp) -- (driver);
+\draw[flecha] (driver) -- (motor);
+\draw[flecha] (motor) -- (agv);
+
+\end{tikzpicture}
+\caption{Arquitectura básica propuesta para el AGV.}
+\end{figure}
+
+\section{Diagrama de funcionamiento}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    iniciofin/.style={
+        ellipse,
+        draw,
+        thick,
+        minimum width=3.5cm,
+        minimum height=1cm,
+        align=center,
+        fill=green!15
+    },
+    proceso/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        thick,
+        minimum width=5.2cm,
+        minimum height=1cm,
+        align=center,
+        fill=blue!10
+    },
+    decision/.style={
+        diamond,
+        draw,
+        thick,
+        aspect=2.2,
+        minimum width=3.8cm,
+        align=center,
+        fill=orange!15
+    },
+    flecha/.style={
+        -{Latex[length=2.5mm]},
+        thick
+    }
+]
+
+\node[iniciofin] (inicio) {Inicio};
+\node[proceso, below=of inicio] (avance) {ESP32 mueve el AGV\\a baja velocidad};
+\node[proceso, below=of avance] (monitorea) {Cámara y sensor IR\\monitorean el entorno};
+\node[decision, below=of monitorea] (persona) {¿Se detecta\\persona u obstáculo?};
+\node[proceso, right=3.3cm of persona] (senal) {Raspberry Pi envía\\señal MQTT al ESP32};
+\node[proceso, below=of persona] (seguir) {El AGV sigue avanzando};
+\node[proceso, below=of senal] (paro) {ESP32 detiene o reduce\\la velocidad de los motores};
+\node[iniciofin, below=of seguir] (fin) {Fin / ciclo continuo};
+
+\draw[flecha] (inicio) -- (avance);
+\draw[flecha] (avance) -- (monitorea);
+\draw[flecha] (monitorea) -- (persona);
+\draw[flecha] (persona) -- node[above]{Sí} (senal);
+\draw[flecha] (senal) -- (paro);
+\draw[flecha] (persona) -- node[right]{No} (seguir);
+\draw[flecha] (seguir) -- (fin);
+\draw[flecha] (paro) |- (fin);
+
+\end{tikzpicture}
+\caption{Flujo básico de operación del AGV.}
+\end{figure}
+
+\section{Conclusión}
+
+En resumen, esta propuesta usa un \textbf{ESP32} para el control de motores y una \textbf{Raspberry Pi} para procesar la detección de personas mediante cámara y sensor infrarrojo. La comunicación entre ambos se realiza con \textbf{MQTT}. Como el AGV transporta \textbf{300 kg}, debe usar motores de alto torque y avanzar lentamente para evitar riesgos, sobre todo en pasillos estrechos y cuando haya personas cerca.
+
+\end{document}
+```
