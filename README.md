@@ -1,2 +1,20 @@
-# Proyecto_Final_UR3_Gemelo_Digital_VR
-Proyecto de control de robot UR3 mediante gemelo digital y realidad mixta.
+# Proyecto Final UR3 - Gemelo Digital y Realidad Mixta
+
+Proyecto para controlar un robot UR3 mediante un gemelo digital visualizado en realidad mixta.
+
+## Tecnologías principales
+
+- UR3
+- Meta Quest 3
+- Unity
+- OpenXR
+- ROS 2
+- MoveIt 2
+- Raspberry Pi
+- ESP32
+- Cámara RGB-D
+- MQTT
+
+## Objetivo
+
+Seleccionar posiciones o productos dentro de un almacén virtual, validar trayectorias en el gemelo digital y posteriormente ejecutar los movimientos en el robot UR3 físico.
