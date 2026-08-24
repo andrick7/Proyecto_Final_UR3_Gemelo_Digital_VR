@@ -4,11 +4,11 @@ Proyecto para controlar un robot UR3 mediante un gemelo digital visualizado en r
 
 ## Tecnologías principales
 
-- UR3
+- Universal Robots UR3
 - Meta Quest 3
 - Unity
 - OpenXR
-- ROS 2
+- Simulink
 - MoveIt 2
 - Raspberry Pi
 - ESP32
