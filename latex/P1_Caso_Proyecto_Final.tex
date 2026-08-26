@@ -103,7 +103,7 @@ La arquitectura se divide en cuatro partes principales:
     Meta Quest 3 ejecutando una aplicación desarrollada en Unity y OpenXR.
 
     \item \textbf{Computadora de borde:}
-    encargada de ROS 2, MoveIt 2, planeación de trayectorias,
+    encargada de Simulink, MoveIt 2, planeación de trayectorias,
     inteligencia artificial y procesamiento de imágenes.
 
     \item \textbf{Sistema físico:}
@@ -144,7 +144,7 @@ Visualizar el gemelo digital, seleccionar productos o posiciones y autorizar mov
 
 Procesamiento principal &
 PC de borde con GPU NVIDIA &
-Ejecutar ROS 2, MoveIt 2, YOLO, planeación de movimiento y agente de IA. \\
+Ejecutar Simulink, MoveIt 2, YOLO, planeación de movimiento y agente de IA. \\
 
 Visión del robot &
 Cámara RGB-D RealSense D405 &
@@ -214,7 +214,7 @@ Permite enviar coordenadas, comandos y recibir en tiempo real el estado del geme
 
 PC de borde &
 UR3 &
-ROS 2 + RTDE sobre Ethernet &
+Simulink + RTDE sobre Ethernet &
 Permite utilizar el driver oficial de Universal Robots y enviar trayectorias previamente calculadas. \\
 
 Cámara RGB-D &
@@ -249,159 +249,6 @@ Permite consultar inventario y recibir actualizaciones sin conectarse directamen
 
 \end{table}
 
-% ---------------------------------------------------------
-\section{Diagrama general del sistema}
-% ---------------------------------------------------------
-
-\begin{figure}[H]
-\centering
-
-\resizebox{\textwidth}{!}{
-\begin{tikzpicture}[
-    node distance=1.2cm and 1.5cm,
-
-    vr/.style={
-        rectangle,
-        rounded corners,
-        draw,
-        thick,
-        minimum width=3.8cm,
-        minimum height=1.2cm,
-        align=center,
-        fill=purple!12
-    },
-
-    control/.style={
-        rectangle,
-        rounded corners,
-        draw,
-        thick,
-        minimum width=4.4cm,
-        minimum height=1.3cm,
-        align=center,
-        fill=orange!15
-    },
-
-    robot/.style={
-        rectangle,
-        rounded corners,
-        draw,
-        thick,
-        minimum width=3.8cm,
-        minimum height=1.2cm,
-        align=center,
-        fill=blue!12
-    },
-
-    sensor/.style={
-        rectangle,
-        rounded corners,
-        draw,
-        thick,
-        minimum width=3.8cm,
-        minimum height=1.2cm,
-        align=center,
-        fill=green!12
-    },
-
-    data/.style={
-        rectangle,
-        rounded corners,
-        draw,
-        thick,
-        minimum width=4cm,
-        minimum height=1.2cm,
-        align=center,
-        fill=cyan!12
-    },
-
-    flecha/.style={
-        -{Latex[length=2.5mm]},
-        thick
-    },
-
-    doble/.style={
-        {Latex[length=2.5mm]}-{Latex[length=2.5mm]},
-        thick
-    }
-]
-
-\node[vr] (quest) {
-    Meta Quest 3\\
-    Unity + OpenXR\\
-    Gemelo digital
-};
-
-\node[control, right=2cm of quest] (pc) {
-    PC de borde\\
-    ROS 2 + MoveIt 2\\
-    IA + YOLO
-};
-
-\node[robot, right=2cm of pc] (ur) {
-    Robot UR3\\
-    Control físico
-};
-
-\node[robot, right=1.5cm of ur] (gripper) {
-    Gripper\\
-    Producto
-};
-
-\node[sensor, below=1.2cm of ur] (camera) {
-    Cámara RGB-D\\
-    RealSense D405
-};
-
-\node[sensor, below=3cm of quest] (loads) {
-    Celdas de carga\\
-    + HX711
-};
-
-\node[sensor, right=1.5cm of loads] (esp) {
-    ESP32\\
-    Lectura de sensores
-};
-
-\node[data, right=1.5cm of esp] (rasp) {
-    Raspberry Pi 5\\
-    MQTT + PostgreSQL
-};
-
-\node[data, right=1.5cm of rasp] (cloud) {
-    Nube\\
-    Inventario remoto
-};
-
-\node[data, right=1.5cm of cloud] (app) {
-    Aplicación móvil\\
-    Monitoreo
-};
-
-\draw[doble] (quest) -- node[above]{WebSocket} (pc);
-
-\draw[doble] (pc) -- node[above]{ROS 2 / RTDE} (ur);
-
-\draw[flecha] (ur) -- (gripper);
-
-\draw[flecha] (camera) -- node[right]{USB 3.0} (pc);
-
-\draw[flecha] (loads) -- (esp);
-
-\draw[flecha] (esp) -- node[above]{MQTT} (rasp);
-
-\draw[doble] (rasp) -- node[above]{HTTPS} (cloud);
-
-\draw[doble] (cloud) -- node[above]{HTTPS} (app);
-
-\draw[doble] (rasp) -- node[right]{MQTT / REST} (pc);
-
-\end{tikzpicture}
-}
-
-\caption{Arquitectura general propuesta para el gemelo digital, UR3 e inventario.}
-
-\end{figure}
 
 % ---------------------------------------------------------
 \section{Representación tridimensional del almacén}
@@ -844,7 +691,7 @@ Se perdería la capa intermedia de validación de colisiones, cinemática y sing
 
 Control del UR3 &
 MQTT &
-MQTT funciona muy bien para telemetría, pero no es la mejor opción para ejecutar trayectorias del robot. Se selecciona ROS 2 y RTDE. \\
+MQTT funciona muy bien para telemetría, pero no es la mejor opción para ejecutar trayectorias del robot. Se selecciona Simulink y RTDE. \\
 
 Conexión UR3 &
 Wi-Fi &
@@ -852,7 +699,7 @@ Puede introducir variaciones de latencia o pérdidas. El robot y la PC se conect
 
 Procesamiento principal &
 Raspberry Pi &
-Aunque puede ejecutar tareas básicas, ROS 2, MoveIt, visión e IA simultáneamente requieren mayor capacidad de procesamiento. \\
+Aunque puede ejecutar tareas básicas, Simulink, MoveIt, visión e IA simultáneamente requieren mayor capacidad de procesamiento. \\
 
 Visión &
 Cámara RGB convencional &
